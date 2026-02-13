@@ -173,6 +173,14 @@ async def shutdown_db_client():
 @app.on_event("startup")
 async def seed_database():
     """Seed database with initial data if empty"""
+    try:
+        await _do_seed_database()
+    except Exception as e:
+        logger.error("Database seed failed (app will start anyway): %s", e, exc_info=True)
+
+
+async def _do_seed_database():
+    """Actual seed logic - runs in background so app can start even if MongoDB fails."""
     from passlib.context import CryptContext
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
     
