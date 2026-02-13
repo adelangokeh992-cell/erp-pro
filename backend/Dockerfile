@@ -10,4 +10,5 @@ COPY . .
 
 EXPOSE 8002
 
-CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8002"]
+# Railway sets PORT; fallback to 8002 for local Docker
+CMD ["sh", "-c", "uvicorn server:app --host 0.0.0.0 --port ${PORT:-8002}"]
