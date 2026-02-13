@@ -1,4 +1,5 @@
-FROM python:3.11-slim
+# Use full Python image for better SSL/TLS support with MongoDB Atlas
+FROM python:3.11
 
 WORKDIR /app
 
