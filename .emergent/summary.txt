@@ -1,0 +1,158 @@
+<analysis>**original_problem_statement:**
+The user initially requested a comprehensive Odoo-clone ERP system. This has pivoted into building a **multi-tenant SaaS platform**.
+
+**New PRODUCT REQUIREMENTS:**
+1.  **Multi-Tenancy Architecture**: A central Super Admin dashboard to manage multiple, data-isolated companies (Tenants).
+2.  **No-Code Customization**: Tenant admins (controlled via Super Admin) should be able to add custom fields to modules (Products, Customers, etc.) and customize printable documents like invoices.
+3.  **Subscription Management**: A licensing system for tenants with different plans (e.g., Basic, Pro) and expiry dates, managed via Stripe.
+4.  **Offline & Sync**: Tenants should be able to use the app offline and sync data when reconnected.
+5.  **Feature Migration**: All original ERP features (RFID scanning, POS, etc.) must be available to tenants, controlled by feature flags.
+
+**User's preferred language**:
+Arabic (العربية). The next agent **MUST** respond and communicate in Arabic.
+
+**what currently exists?**
+The project is a stable, functional multi-tenant SaaS platform. The core architecture is complete.
+- **Super Admin System**: A complete dashboard for Super Admins to create and manage tenants. It includes a powerful, centralized settings page for each tenant to configure feature toggles, create custom fields for different modules, design invoice templates, and set usage limits (e.g., max products, users).
+- **Tenant System**: The tenant-facing application dynamically adapts to the settings configured by the Super Admin. The sidebar shows/hides features based on toggles, and forms for Products, Customers, and Suppliers render the custom fields.
+- **Authentication & Data Isolation**: A robust JWT-based system ensures complete data isolation between tenants using a . Both Super Admin and Tenant logins are fully functional.
+- **Subscription Management**: The system is integrated with Stripe. A subscriptions page allows the Super Admin to view tenant subscription status, and tenants can view different plans. Backend endpoints for creating Stripe checkout sessions are implemented.
+- **Limit Enforcement**: The application displays warnings and prevents the creation of new items (products, users, etc.) when a tenant reaches the limits set by the Super Admin.
+
+**Last working item**:
+-   **Last item agent was working**: Improving the **Offline Mode** to be fully compatible with the multi-tenant architecture. The user specifically requested this task. The agent had started by reviewing the existing  and  files and had just updated the UI in  to add controls for the offline mode. The core logic for tenant-specific data storage and synchronization is yet to be implemented.
+-   **Status**: IN PROGRESS
+-   **Agent Testing Done**: N
+-   **Which testing method agent to use?**: both. The frontend needs testing to verify the UI for offline sync and data access. The backend needs testing for the data synchronization endpoint that will merge offline data.
+-   **User Testing Done**: N
+
+**All Pending/In progress Issue list**:
+-   **Issue 1: Frontend build environment is unstable ()**
+    -   **Attempted fixes**: None recently. This is a low-priority, recurring technical debt item.
+    -   **Next debug checklist**:
+        1.  Isolate a minimal component that reproduces the crash.
+        2.  Investigate  for potential infinite recursion.
+    -   **Why fix this issue and what will be achieved with the fix?**: Fixing this will stabilize frontend development, preventing random crashes and improving developer experience.
+    -   **Status**: NOT STARTED
+    -   **Is recurring issue?**: Y
+    -   **Should Test frontend/backend/both after fix?**: frontend
+    -   **Blocked on other issue**: None.
+
+**In progress Task List**:
+-   **Task 1: Complete the Multi-Tenant Offline Mode (P0)**
+    -   **Where to resume**: The agent has updated the UI in . The next steps are to implement the core logic:
+        1.  Modify  to make all storage operations tenant-aware. Data should be keyed with the  (e.g., ).
+        2.  Update  to use the new tenant-aware storage functions and manage the sync state.
+        3.  Implement the  function that pushes local data changes to the backend and fetches the latest data for the specific tenant.
+        4.  Add a Sync button to the main application layout for tenants to trigger this process.
+    -   **What will be achieved with this?**: Tenants will be able to use the application without an internet connection, with their data stored securely and locally, and sync it back to the server once they are online.
+    -   **Status**: IN PROGRESS
+    -   **Should Test frontend/backend/both after fix?**: both
+    -   **Blocked on something**: None.
+
+**Upcoming and Future Tasks**
+-   **Upcoming Tasks**:
+    -   (P1) **Auto-suspend Tenants on Subscription Expiry**: Implement a backend mechanism (e.g., middleware check) to automatically block access for tenants with expired Stripe subscriptions.
+    -   (P2) **Customer Subscription Portal**: Create a page where tenant admins can manage their subscription, view billing history, and update payment details, likely by integrating Stripe's customer portal.
+    -   (P2) **RFID Inventory Count Improvements**: Revisit and improve the RFID inventory count feature within the tenant UI.
+-   **Future Tasks**:
+    -   **Advanced RBAC**: Implement role-based access control for users within each tenant.
+    -   **ESL Integration**: Integrate Electronic Shelf Labels.
+    -   **Email Notifications**: Build a system for sending automated emails (e.g., subscription reminders, low stock alerts).
+    -   **Advanced Reporting**: Develop a dashboard with charts and analytics for tenants.
+
+**Completed work in this session**
+-   **Multi-Tenant Auth & Data Isolation (FIXED)**: Successfully implemented JWT-based authentication with  to ensure complete data separation.
+-   **Comprehensive Tenant Control System (DONE)**:
+    -   Built a Tenant Settings page for the Super Admin.
+    -   Implemented **Feature Toggles** to enable/disable modules per tenant.
+    -   Implemented **No-Code Custom Fields** for Products, Customers, and Suppliers.
+    -   Implemented **No-Code Invoice Customization** (logo, colors, etc.).
+    -   Implemented **Usage Limits** configuration.
+-   **Dynamic Tenant UI (DONE)**: The tenant-facing application now dynamically renders its UI (sidebar, forms) based on the settings configured by the Super Admin.
+-   **Stripe Subscription Integration (DONE)**: Integrated Stripe for SaaS subscription management, including backend endpoints and a frontend page for plan selection.
+-   **Usage Limit Enforcement (DONE)**: Added UI warnings and backend logic to enforce tenant-specific limits on resources like products, users, and invoices.
+-   **Custom Fields for Customers & Suppliers (DONE)**: Extended the custom fields functionality to the customer and supplier modules.
+-   **Orphaned Data Cleanup (DONE)**: Deleted old data that did not have a .
+
+**Earlier issues found/mentioned but not fixed**
+-   The circular dependency risk () in older backend route files still exists and should be refactored using FastAPI's  system.
+
+**Known issue recurrence from previous fork**
+-   The  frontend error is a persistent, recurring issue from previous forks.
+
+**Code Architecture**
+
+
+**Key Technical Concepts**
+-   **Multi-Tenancy**: The application serves multiple customers (tenants) from a single instance, with data partitioned by .
+-   **Dynamic Feature Gating**: Using Feature Toggles to control tenant access to modules.
+-   **Dynamic Schema via Custom Fields**: Storing arbitrary user-defined fields in a  dictionary within MongoDB documents.
+-   **Stripe Integration**: Using Stripe Checkout sessions for SaaS subscription management.
+-   **Offline-First Architecture (In Progress)**: Using browser  to cache data for offline use and implementing a sync mechanism.
+
+**key DB schema**
+-   : 
+-   : 
+-   , , , etc.: All now include .
+
+**All files of reference**
+-   : Needs to be updated for multi-tenancy.
+-   : The core file for local storage logic; requires significant tenant-aware updates.
+-   : Contains the UI for managing offline settings.
+-   : Where the global Sync button will likely be added.
+-   : The API that serves tenant settings, which will be needed by the offline sync logic.
+
+**Critical Info for New Agent**
+-   **Focus on Offline Mode**: The user's highest priority is completing the multi-tenant offline functionality. Start here.
+-   **The System is Stable**: The core SaaS features (tenancy, customization, subscriptions) are complete and functional. You are building on a solid foundation.
+-   **Super Admin is Key**: Most dynamic behavior (features, custom fields) is controlled from the Super Admin's Tenant Settings page (). Refer to this page to understand how the application is configured.
+-   **Technical Debt**: Be aware of the recurring frontend crash and the backend circular dependencies, but do not address them unless they become a blocker or the user prioritizes them.
+
+**documents and test reports created in this job**
+-    (Updated extensively)
+-   
+
+**Last 10 User Messages and any pending HUMAN messages**
+10. User asks for a summary of all remaining tasks.
+9.  Agent provides a detailed summary of completed, remaining, and backlog tasks.
+8.  User selects the next task: **تحسين Offline Mode (Improve Offline Mode)**.
+7.  Agent agrees and begins working on the Offline Mode task.
+6.  User asks to apply custom fields to customers/suppliers and improve the invoice generator. (Completed)
+5.  User asks to implement the enforcement of feature toggles, limits, and custom fields. (Completed)
+4.  User provides clarification on how the no-code customization should be managed by the Super Admin. (Implemented)
+3.  User approves the plan to delete old data and build the tenant control system. (Completed)
+2.  User requests work to start on the previously defined priorities (data isolation and tenant login). (Completed)
+1.  User approves the initial plan to fix the data isolation blocker. (Completed)
+
+**Project Health Check:**
+-   **Broken**: No core functionality is broken. The application is stable.
+-   **Mocked**: The multi-tenant **Offline Mode** is currently mocked. The UI exists, but the underlying tenant-aware logic for storage and sync is not yet implemented.
+
+**3rd Party Integrations**
+-   : PDF generation.
+-   : Excel generation.
+-   : Password hashing.
+-   : JWT handling.
+-   : Subscription and payment processing.
+
+**Testing status**
+-   **Testing agent used after significant changes**: YES, a full test run was successfully completed after fixing the authentication and data isolation logic.
+-   **Troubleshoot agent used after agent stuck in loop**: NO
+-   **Test files created**: None.
+-   **Known regressions**: None.
+
+**Credentials to test flow:**
+-   **Super Admin**:
+    -   **Login URL**:  (select مدير النظام / Super Admin)
+    -   **Username**: 
+    -   **Password**: 
+-   **Tenant Admin (for شركة النور للتجارة)**:
+    -   **Login URL**:  (select مستخدم شركة / Tenant User)
+    -   **Tenant Code**: 
+    -   **Username**: 
+    -   **Password**: 
+
+**What agent forgot to execute**
+-   The agent did not address the long-standing  crash, which remains a low-priority risk for frontend stability.
+-   The agent did not refactor the  circular dependency risk in older files.</analysis>

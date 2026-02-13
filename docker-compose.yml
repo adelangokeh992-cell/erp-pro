@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7
+    container_name: erp-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: erp-backend
+    ports:
+      - "8002:8002"
+    environment:
+      - MONGO_URL=mongodb://mongodb:27017
+      - DB_NAME=erp_local
+      - SECRET_KEY=${SECRET_KEY:-change-this-in-production}
+      - CORS_ORIGINS=*
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+
+volumes:
+  mongodb_data:
